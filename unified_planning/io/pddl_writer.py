@@ -486,7 +486,22 @@ class PDDLWriter:
                 "Only one metric is supported!"
             )
 
+        if self.problem_kind.has_hierarchical():
+            for t in self.problem.tasks:
+                out.write(f" (:task {self._get_mangled_name(t)}")
+                out.write(f"\n  :parameters (")
+                for tp in t.parameters:
+                    if tp.type.is_user_type():
+                        out.write(
+                            f" {self._get_mangled_name(tp)} - {self._get_mangled_name(tp.type)}"
+                        )
+                    else:
+                        raise UPTypeError("PDDL supports only user type parameters")
+                out.write(")")
+                out.write(")\n")
+
         em = self.problem.env.expression_manager
+
         for a in self.problem.actions:
             if isinstance(a, up.model.InstantaneousAction):
                 if em.FALSE() in a.preconditions:
