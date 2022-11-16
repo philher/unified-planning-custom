@@ -377,6 +377,12 @@ class PDDLWriter:
                 or self.problem_kind.has_plan_length()
             ):
                 out.write(" :action-costs")
+            if self.problem_kind.has_hierarchical():
+                out.write(" :hierarchy")
+                out.write(
+                    " :method-preconditions"
+                )  # Should it be another, separate property ?
+
             out.write(")\n")
 
         if self.problem_kind.has_hierarchical_typing():
