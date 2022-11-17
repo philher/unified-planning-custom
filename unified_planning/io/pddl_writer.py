@@ -381,7 +381,7 @@ class PDDLWriter:
                 out.write(" :hierarchy")
                 out.write(
                     " :method-preconditions"
-                )  # Should it be another, separate property ?
+                )  # TODO: Should be moved when a separate property is added
 
             out.write(")\n")
 
