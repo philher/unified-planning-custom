@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
+import warnings
 from fractions import Fraction
 import sys
 import re
@@ -487,17 +486,48 @@ class PDDLWriter:
             )
 
         if self.problem_kind.has_hierarchical():
+
+            def param_pddl_str(parameter: Parameter) -> str:
+                if parameter.type.is_user_type():
+                    return f" {self._get_mangled_name(parameter)} - {self._get_mangled_name(parameter.type)}"
+                else:
+                    raise UPTypeError("PDDL supports only user type parameters")
+
             for t in self.problem.tasks:
                 out.write(f" (:task {self._get_mangled_name(t)}")
-                out.write(f"\n  :parameters (")
-                for tp in t.parameters:
-                    if tp.type.is_user_type():
+                out.write(
+                    f'\n  :parameters ({" ".join([param_pddl_str(p) for p in t.parameters])})'
+                )
+                out.write(")\n")
+            for m in self.problem.methods:
+                out.write(f" (:method {self._get_mangled_name(m)}")
+                out.write(
+                    f'\n  :parameters ({" ".join([param_pddl_str(p) for p in m.parameters])})'
+                )
+                if len(m.preconditions) > 0:
+                    out.write(
+                        f'\n  :precondition (and {" ".join([converter.convert(p) for p in m.preconditions])})'
+                    )
+                # TODO handle time constraints when required code is implemented
+                if len(m.constraints) > 0:
+                    warnings.warn(
+                        f"Method {m.name}: ignored constraints ({m.constraints})"
+                    )
+                if len(m.subtasks) == 1:
+                    out.write(f"\n  :subtasks ({converter.convert(m.subtasks[0])})")
+                elif len(m.subtasks) >= 2:
+                    warnings.warn(
+                        f"Method {m.name}: assuming that all subtasks in the method are totally ordered as in {m.subtasks}"
+                    )
+                    out.write(f"\n  :ordered-subtasks (and")
+                    for st in m.subtasks:
+                        out.write(f"\n ({self._get_mangled_name(st.task)}")
+                        # TODO: Check if it possible for args not to be a Parameter, but another Fnode
                         out.write(
-                            f" {self._get_mangled_name(tp)} - {self._get_mangled_name(tp.type)}"
+                            f'({" ".join([self._get_mangled_name(p.parameter()) for p in st.parameters])})'
                         )
-                    else:
-                        raise UPTypeError("PDDL supports only user type parameters")
-                out.write(")")
+                        out.write(")")
+                    out.write(")")
                 out.write(")\n")
 
         em = self.problem.env.expression_manager
