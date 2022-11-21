@@ -20,6 +20,8 @@ A Task has a name and a signature that defines the types of its parameters.
 import unified_planning as up
 from unified_planning.environment import get_env, Environment
 from typing import List, OrderedDict, Optional, Union
+
+from unified_planning.exceptions import UPValueError
 from unified_planning.model.fnode import FNode
 from unified_planning.model.action import Action
 from unified_planning.model.timing import Timepoint, TimepointKind
@@ -87,6 +89,13 @@ class Task:
     def parameters(self) -> List[Parameter]:
         """Returns the task's parameters as a list."""
         return self._parameters
+
+    def parameter(self, name: str) -> Parameter:
+        """Returns the parameter of the task with the given name."""
+        for param in self.parameters:
+            if param.name == name:
+                return param
+        raise UPValueError(f"Unknown parameter name: {name}")
 
     def __call__(self, *args: Expression, ident: Optional[str] = None) -> "Subtask":
         """Returns a subtask with the given parameters."""
