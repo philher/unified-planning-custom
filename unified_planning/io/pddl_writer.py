@@ -693,6 +693,22 @@ class PDDLWriter:
                     )
             out.write("\n )\n")
         converter = ConverterToPDDLString(self.problem.env, self._get_mangled_name)
+        if self.problem_kind.has_hierarchical():
+            subtasks = self.problem.task_network.subtasks
+            if len(subtasks) > 0:
+                out.write(" (:htn")
+                warnings.warn(
+                    "assumes initial task network is totally ordered as in the list"
+                )
+                out.write("\n(:ordered-tasks (and")
+                for st in subtasks:
+                    out.write(f"\n ({self._get_mangled_name(st.task)}")
+                    # TODO: Check if it possible for args not to be a Parameter, but another Fnode
+                    out.write(
+                        f'({" ".join([self._get_mangled_name(p.object()) for p in st.parameters])})'
+                    )
+                    out.write(")")
+                out.write("\n  )\n )\n)\n")
         out.write(" (:init")
         for f, v in self.problem.initial_values.items():
             if v.is_true():
