@@ -504,6 +504,9 @@ class PDDLWriter:
                 out.write(
                     f'\n  :parameters ({" ".join([param_pddl_str(p) for p in m.parameters])})'
                 )
+                out.write(
+                    f'\n  :task({converter.get_mangled_name(m._task.task)} {" ".join([converter.get_mangled_name(p) for p in m._task.parameters])})'
+                )
                 if len(m.preconditions) > 0:
                     out.write(
                         f'\n  :precondition (and {" ".join([converter.convert(p) for p in m.preconditions])})'
@@ -519,12 +522,12 @@ class PDDLWriter:
                     warnings.warn(
                         f"Method {m.name}: assuming that all subtasks in the method are totally ordered as in {m.subtasks}"
                     )
-                    out.write(f"\n  :ordered-subtasks (and")
+                    out.write(f"\n   :ordered-subtasks (and")
                     for st in m.subtasks:
-                        out.write(f"\n ({self._get_mangled_name(st.task)}")
+                        out.write(f"\n    ({self._get_mangled_name(st.task)}")
                         # TODO: Check if it possible for args not to be a Parameter, but another Fnode
                         out.write(
-                            f'({" ".join([self._get_mangled_name(p.parameter()) for p in st.parameters])})'
+                            f' {" ".join([self._get_mangled_name(p.parameter()) for p in st.parameters])}'
                         )
                         out.write(")")
                     out.write(")")
