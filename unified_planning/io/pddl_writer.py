@@ -508,8 +508,9 @@ class PDDLWriter:
                     f'\n  :task({converter.get_mangled_name(m._task.task)} {" ".join([converter.get_mangled_name(p) for p in m._task.parameters])})'
                 )
                 if len(m.preconditions) > 0:
+                    base_str = "\n    "
                     out.write(
-                        f'\n  :precondition (and {" ".join([converter.convert(p) for p in m.preconditions])})'
+                        f"\n  :precondition (and\n    {base_str.join([converter.convert(p) for p in m.preconditions])}\n   )"
                     )
                 # TODO handle time constraints when required code is implemented
                 if len(m.constraints) > 0:
@@ -522,7 +523,7 @@ class PDDLWriter:
                     warnings.warn(
                         f"Method {m.name}: assuming that all subtasks in the method are totally ordered as in {m.subtasks}"
                     )
-                    out.write(f"\n   :ordered-subtasks (and")
+                    out.write(f"\n  :ordered-subtasks (and")
                     for st in m.subtasks:
                         out.write(f"\n    ({self._get_mangled_name(st.task)}")
                         # TODO: Check if it possible for args not to be a Parameter, but another Fnode
@@ -530,8 +531,8 @@ class PDDLWriter:
                             f' {" ".join([self._get_mangled_name(p.parameter()) for p in st.parameters])}'
                         )
                         out.write(")")
-                    out.write(")")
-                out.write(")\n")
+                    out.write("\n   )")
+                out.write("\n )\n")
 
         em = self.problem.env.expression_manager
 
