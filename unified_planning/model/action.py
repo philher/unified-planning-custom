@@ -18,7 +18,6 @@ An `Action` has a `name`, a `list` of `Parameter`, a `list` of `preconditions`
 and a `list` of `effects`.
 """
 
-
 import unified_planning as up
 from unified_planning.environment import get_env, Environment
 from unified_planning.exceptions import (
@@ -360,10 +359,12 @@ class InstantaneousAction(Action):
         ), "effect does not have the same environment of the action"
         if not effect.is_conditional():
             if effect.is_assignment():
-                if (
+                # accept trying to add exactly the same effect (not a conflict)
+                is_assignement_conflict = (
                     effect.fluent in self._fluents_assigned
-                    or effect.fluent in self._fluents_inc_dec
-                ):
+                    and effect not in self._effects
+                )
+                if is_assignement_conflict or effect.fluent in self._fluents_inc_dec:
                     raise UPConflictingEffectsException(
                         f"The effect {effect} is in conflict with the effects already in the action."
                     )

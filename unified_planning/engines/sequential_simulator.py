@@ -149,7 +149,9 @@ class SequentialSimulator(Engine, SimulatorMixin):
                 e.condition, state
             ).is_true():
                 if e.is_assignment():
-                    if fluent in updated_values:
+                    if fluent in updated_values and (
+                        updated_values[fluent] != self._se.evaluate(e.value, state)
+                    ):
                         raise UPConflictingEffectsException(
                             f"The fluent {fluent} is modified by 2 assignments in the same event."
                         )
